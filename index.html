@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Dutch Judge - Observation des Enchaînements</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #FF3366;
+            --secondary: #00D4FF;
+            --accent: #FFD700;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --debout: #4ECDC4;
+            --acrobatique: #FF6B6B;
+            --sol: #FFE66D;
+            --success: #51cf66;
+            --warning: #ffd43b;
+            --danger: #ff6b6b;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, #16213e 100%);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 3px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        h2 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+            letter-spacing: 2px;
+        }
+
+        h3 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Bebas Neue', cursive;
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #cc0044);
+            color: white;
+            box-shadow: 0 8px 25px rgba(255, 51, 102, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(255, 51, 102, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary), #0099cc);
+            color: white;
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0, 212, 255, 0.6);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #38b653);
+            color: white;
+            box-shadow: 0 8px 25px rgba(81, 207, 102, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning), #e6b800);
+            color: var(--dark);
+            box-shadow: 0 8px 25px rgba(255, 212, 59, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #cc0000);
+            color: white;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            padding: 0.7rem 1.5rem;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-5px);
+        }
+
+        .figure-btn {
+            margin: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+        }
+
+        .figure-btn.debout {
+            background: linear-gradient(135deg, var(--debout), #3aa89f);
+        }
+
+        .figure-btn.acrobatique {
+            background: linear-gradient(135deg, var(--acrobatique), #cc5555);
+        }
+
+        .figure-btn.sol {
+            background: linear-gradient(135deg, var(--sol), #e6cc00);
+            color: var(--dark);
+        }
+
+        .figure-btn.validated {
+            background: linear-gradient(135deg, var(--success), #38b653);
+            opacity: 0.6;
+        }
+
+        .figure-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            justify-content: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--secondary);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .timer {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 6rem;
+            text-align: center;
+            margin: 2rem 0;
+            padding: 2rem;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            letter-spacing: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .timer.green {
+            color: var(--success);
+            text-shadow: 0 0 30px rgba(81, 207, 102, 0.6);
+        }
+
+        .timer.yellow {
+            color: var(--warning);
+            text-shadow: 0 0 30px rgba(255, 212, 59, 0.6);
+            animation: pulse 1s infinite;
+        }
+
+        .timer.red {
+            color: var(--danger);
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.6);
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .student-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .student-item {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .student-item:hover {
+            border-color: var(--accent);
+            transform: scale(1.05);
+        }
+
+        .student-item.selected {
+            background: var(--secondary);
+            color: var(--dark);
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+
+        .figure-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .figure-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 4px solid var(--secondary);
+            transition: all 0.3s ease;
+        }
+
+        .figure-item.validated {
+            background: rgba(81, 207, 102, 0.3);
+            border-left-color: var(--success);
+            box-shadow: 0 0 20px rgba(81, 207, 102, 0.3);
+        }
+
+        .figure-item.validated::before {
+            content: '✓ ';
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--dark);
+            border: 2px solid var(--secondary);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.3);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: center;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-label:hover {
+            border-color: var(--secondary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .summary-table th,
+        .summary-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .summary-table th {
+            background: rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .summary-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .badge-display {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .badge-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .badge-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .timer {
+                font-size: 4rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Page 1: Configuration Générale -->
+        <div id="page-config" class="page active">
+            <h1>Double Dutch Judge</h1>
+            <h2>Configuration Générale</h2>
+
+            <div class="card">
+                <h3>Import Excel</h3>
+                <div class="form-group">
+                    <label>Importer un fichier Excel (.xlsx, .xls)</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="excelFile" accept=".xlsx,.xls">
+                        <label for="excelFile" class="file-input-label">
+                            📁 Cliquez pour sélectionner un fichier Excel
+                        </label>
+                    </div>
+                    <small style="color: rgba(255,255,255,0.6); display: block; margin-top: 0.5rem;">
+                        Format: Colonne A: Nom élève | Colonne B: Badge | Colonne C: Nb figures pour ce badge | Colonne D: Figures debout | Colonne E: Figures acrobatiques | Colonne F: Figures au sol | Colonne G: Types de transition
+                    </small>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Élèves</h3>
+                <div class="form-group">
+                    <label>Liste des élèves (un par ligne)</label>
+                    <textarea id="studentsList" placeholder="Alice&#10;Bob&#10;Charlie"></textarea>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Figures Debout</h3>
+                <div class="form-group">
+                    <label>Figures (format: Nom - Niveau)</label>
+                    <textarea id="figuresDebout" placeholder="Saut simple - A&#10;Saut croisé - B&#10;Double under - C"></textarea>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Figures Acrobatiques</h3>
+                <div class="form-group">
+                    <label>Figures (format: Nom - Niveau)</label>
+                    <textarea id="figuresAcrobatique" placeholder="Roue - A&#10;Flip arrière - B&#10;Salto - C"></textarea>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Figures au Sol</h3>
+                <div class="form-group">
+                    <label>Figures (format: Nom - Niveau)</label>
+                    <textarea id="figuresSol" placeholder="Pont - A&#10;Split - B&#10;Poirier - C"></textarea>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Configuration des Enchaînements</h3>
+                <div class="form-group">
+                    <label>Niveaux (badges) disponibles (un par ligne)</label>
+                    <textarea id="badgesList" placeholder="Badge Bronze&#10;Badge Argent&#10;Badge Or"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Nombre de figures par jumper</label>
+                    <input type="number" id="figuresPerJumper" value="3" min="1" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Niveaux de transitions</label>
+                    <textarea id="transitionLevels" placeholder="Basique&#10;Directe&#10;Autre">Basique&#10;Directe&#10;Autre</textarea>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" onclick="startSession()"><span>Début de la séance</span></button>
+            </div>
+        </div>
+
+        <!-- Page 2: Configuration de l'observation -->
+        <div id="page-observation-config" class="page">
+            <button class="btn-back" onclick="confirmBack('page-config')"><span>← Retour</span></button>
+            <h2>Configuration de l'Observation</h2>
+
+            <div class="card">
+                <h3>Sélection du Badge</h3>
+                <div id="badgeSelection"></div>
+            </div>
+
+            <div class="card">
+                <h3>Niveau de transition requis</h3>
+                <div id="transitionSelection"></div>
+            </div>
+
+            <div class="card">
+                <h3>Sélection des Jumpers</h3>
+                <div id="jumperSelection"></div>
+                <div id="selectedJumpers" style="margin-top: 1rem; font-weight: 600;"></div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-secondary" onclick="confirmFigureSelection()"><span>Configurer les figures</span></button>
+                <button class="btn-danger" onclick="endSession()"><span>Fin de séance</span></button>
+            </div>
+        </div>
+
+        <!-- Page 3: Sélection des figures Jumper 1 -->
+        <div id="page-figures-j1" class="page">
+            <button class="btn-back" onclick="confirmBack('page-observation-config')"><span>← Retour</span></button>
+            <h2>Sélection des Figures - Jumper 1</h2>
+            <h3 id="jumper1Name"></h3>
+            <div id="figureSelectionJ1"></div>
+            <div id="selectedFiguresJ1" class="figure-list"></div>
+            <div class="button-group">
+                <button class="btn-secondary" id="btnNextJ2" onclick="goToJumper2()" style="display:none;"><span>Jumper 2 →</span></button>
+            </div>
+        </div>
+
+        <!-- Page 4: Sélection des figures Jumper 2 -->
+        <div id="page-figures-j2" class="page">
+            <button class="btn-back" onclick="confirmBack('page-figures-j1')"><span>← Retour</span></button>
+            <h2>Sélection des Figures - Jumper 2</h2>
+            <h3 id="jumper2Name"></h3>
+            <div id="figureSelectionJ2"></div>
+            <div id="selectedFiguresJ2" class="figure-list"></div>
+            <div class="button-group">
+                <button class="btn-secondary" id="btnNextJ3" onclick="goToJumper3()" style="display:none;"><span>Jumper 3 →</span></button>
+            </div>
+        </div>
+
+        <!-- Page 5: Sélection des figures Jumper 3 -->
+        <div id="page-figures-j3" class="page">
+            <button class="btn-back" onclick="confirmBack('page-figures-j2')"><span>← Retour</span></button>
+            <h2>Sélection des Figures - Jumper 3</h2>
+            <h3 id="jumper3Name"></h3>
+            <div id="figureSelectionJ3"></div>
+            <div id="selectedFiguresJ3" class="figure-list"></div>
+            <div class="button-group">
+                <button class="btn-primary" id="btnReview" onclick="goToReview()" style="display:none;"><span>Révision →</span></button>
+            </div>
+        </div>
+
+        <!-- Page 6: Révision des figures -->
+        <div id="page-review" class="page">
+            <button class="btn-back" onclick="confirmBack('page-figures-j3')"><span>← Retour</span></button>
+            <h2>Révision de l'Enchaînement</h2>
+            <div id="reviewContent"></div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="startObservation()"><span>Démarrer l'observation</span></button>
+            </div>
+        </div>
+
+        <!-- Page 7: Observation Jumper 1 -->
+        <div id="page-observe-j1" class="page">
+            <h2>Observation - <span id="observeJ1Name"></span></h2>
+            <div class="timer green" id="timer">01:30</div>
+            <div class="button-group">
+                <button class="btn-success" id="btnStartTimer" onclick="startTimer()"><span>▶ Démarrer</span></button>
+                <button class="btn-warning" id="btnPauseTimer" onclick="pauseTimer()" style="display:none;"><span>⏸ Pause</span></button>
+                <button class="btn-danger" onclick="resetTimer()"><span>🔄 Remise à zéro</span></button>
+            </div>
+            <div class="card">
+                <div id="observeFiguresJ1" class="figure-list"></div>
+            </div>
+            <div class="card">
+                <h3>Transition Jumper 1 → Jumper 2</h3>
+                <p><strong>Niveau requis :</strong> <span id="transitionLevelJ1Display"></span></p>
+                <div class="button-group">
+                    <button class="btn-success" onclick="validateTransitionOnPage(1, true)"><span>✓ Transition Valide</span></button>
+                    <button class="btn-danger" onclick="validateTransitionOnPage(1, false)"><span>✗ Transition Non Valide</span></button>
+                </div>
+                <p id="transitionStatusJ1" style="margin-top: 1rem; font-weight: 600;"></p>
+            </div>
+            <div class="button-group">
+                <button class="btn-secondary" onclick="goToJumper2FromJ1()"><span>Jumper 2 →</span></button>
+                <button class="btn-danger" onclick="confirmEndSequence()"><span>Fin de l'enchaînement</span></button>
+            </div>
+        </div>
+
+        <!-- Page 9: Observation Jumper 2 -->
+        <div id="page-observe-j2" class="page">
+            <h2>Observation - <span id="observeJ2Name"></span></h2>
+            <div class="timer green" id="timer2">--:--</div>
+            <div class="card">
+                <div id="observeFiguresJ2" class="figure-list"></div>
+            </div>
+            <div class="card">
+                <h3>Transition Jumper 2 → Jumper 3</h3>
+                <p><strong>Niveau requis :</strong> <span id="transitionLevelJ2Display"></span></p>
+                <div class="button-group">
+                    <button class="btn-success" onclick="validateTransitionOnPage(2, true)"><span>✓ Transition Valide</span></button>
+                    <button class="btn-danger" onclick="validateTransitionOnPage(2, false)"><span>✗ Transition Non Valide</span></button>
+                </div>
+                <p id="transitionStatusJ2" style="margin-top: 1rem; font-weight: 600;"></p>
+            </div>
+            <div class="button-group">
+                <button class="btn-warning" onclick="goToObserveJumper(1)"><span>← Jumper 1</span></button>
+                <button class="btn-secondary" onclick="goToJumper3FromJ2()"><span>Jumper 3 →</span></button>
+                <button class="btn-danger" onclick="confirmEndSequence()"><span>Fin de l'enchaînement</span></button>
+            </div>
+        </div>
+
+        <!-- Page 11: Observation Jumper 3 -->
+        <div id="page-observe-j3" class="page">
+            <h2>Observation - <span id="observeJ3Name"></span></h2>
+            <div class="timer green" id="timer3">--:--</div>
+            <div class="card">
+                <div id="observeFiguresJ3" class="figure-list"></div>
+            </div>
+            <div class="card">
+                <h3>Sortie finale</h3>
+                <div class="button-group">
+                    <button class="btn-success" onclick="validateExitOnPage(true)"><span>✓ Sortie Valide</span></button>
+                    <button class="btn-danger" onclick="validateExitOnPage(false)"><span>✗ Sortie Non Valide</span></button>
+                </div>
+                <p id="exitStatus" style="margin-top: 1rem; font-weight: 600;"></p>
+            </div>
+            <div class="button-group">
+                <button class="btn-warning" onclick="goToObserveJumper(1)"><span>← Jumper 1</span></button>
+                <button class="btn-warning" onclick="goToObserveJumper(2)"><span>← Jumper 2</span></button>
+                <button class="btn-danger" id="btnEndSequence" onclick="confirmEndSequence()"><span>Fin de l'enchaînement</span></button>
+            </div>
+        </div>
+
+        <!-- Page 12: Récapitulatif du passage -->
+        <div id="page-summary" class="page">
+            <h2>Récapitulatif du Passage</h2>
+            <div id="summaryContent"></div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="backToObservationConfig()"><span>Nouvelle observation</span></button>
+            </div>
+        </div>
+
+        <!-- Page 13: Récapitulatif de la séance -->
+        <div id="page-session-summary" class="page">
+            <h2>Récapitulatif de la Séance</h2>
+            <div id="sessionSummaryContent"></div>
+            <div class="button-group">
+                <button class="btn-success" onclick="downloadExcel()"><span>📥 Télécharger Excel</span></button>
+                <button class="btn-primary" onclick="endSessionFinal()"><span>Terminer la séance</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Confirmation</h3>
+            <p id="modalMessage">Êtes-vous sûr de vouloir continuer ?</p>
+            <div class="modal-buttons">
+                <button class="btn-success" onclick="confirmAction()"><span>Oui</span></button>
+                <button class="btn-danger" onclick="closeModal()"><span>Non</span></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // État global de l'application
+        const appState = {
+            students: [],
+            figuresDebout: [],
+            figuresAcrobatique: [],
+            figuresSol: [],
+            badges: [],
+            badgeFiguresCount: {}, // Nombre de figures requis pour chaque badge
+            figuresPerJumper: 3,
+            transitionLevels: [],
+            currentBadge: '',
+            requiredTransitionLevel: '', // Niveau de transition requis pour cet enchaînement
+            selectedJumpers: [],
+            jumperFigures: {
+                j1: [],
+                j2: [],
+                j3: []
+            },
+            transitionResults: {
+                t1: null,
+                t2: null
+            },
+            exitResult: null, // Résultat de la sortie
+            validatedFigures: {
+                j1: [],
+                j2: [],
+                j3: []
+            },
+            timerInterval: null,
+            timeRemaining: 90,
+            sessionRecords: [],
+            pendingCallback: null
+        };
+
+        // Gestion des pages
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function confirmBack(targetPage) {
+            showConfirmModal(
+                'Retour',
+                'Voulez-vous vraiment revenir en arrière ?',
+                () => showPage(targetPage)
+            );
+        }
+
+        // Modal de confirmation
+        function showConfirmModal(title, message, callback) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            appState.pendingCallback = callback;
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function confirmAction() {
+            if (appState.pendingCallback) {
+                appState.pendingCallback();
+                appState.pendingCallback = null;
+            }
+            closeModal();
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+            appState.pendingCallback = null;
+        }
+
+        // Import Excel
+        document.getElementById('excelFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    parseExcel(event.target.result);
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
+
+        function parseExcel(data) {
+            try {
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                if (rows.length === 0) {
+                    alert('⚠️ Le fichier Excel est vide.');
+                    return;
+                }
+
+                const students = [];
+                const badges = new Set();
+                const badgeFiguresCount = {};
+                const figDebout = new Set();
+                const figAcro = new Set();
+                const figSol = new Set();
+                const transitions = new Set();
+
+                // TOUJOURS ignorer la première ligne (ligne 1 = en-têtes)
+                rows.forEach((row, index) => {
+                    // Ignorer la première ligne (index 0)
+                    if (index === 0) {
+                        return;
+                    }
+
+                    // Colonne A: Élèves
+                    if (row[0] !== undefined && row[0] !== null && String(row[0]).trim() !== '') {
+                        students.push(String(row[0]).trim());
+                    }
+                    
+                    // Colonne B: Badges + Colonne C: Nombre de figures pour ce badge
+                    if (row[1] !== undefined && row[1] !== null && String(row[1]).trim() !== '') {
+                        const badgeName = String(row[1]).trim();
+                        badges.add(badgeName);
+                        
+                        // Si la colonne C contient un nombre, l'associer au badge
+                        if (row[2] !== undefined && row[2] !== null) {
+                            const figCount = parseInt(row[2]);
+                            if (!isNaN(figCount) && figCount > 0) {
+                                badgeFiguresCount[badgeName] = figCount;
+                            }
+                        }
+                    }
+                    
+                    // Colonne D: Figures debout
+                    if (row[3] !== undefined && row[3] !== null && String(row[3]).trim() !== '') {
+                        figDebout.add(String(row[3]).trim());
+                    }
+                    
+                    // Colonne E: Figures acrobatiques
+                    if (row[4] !== undefined && row[4] !== null && String(row[4]).trim() !== '') {
+                        figAcro.add(String(row[4]).trim());
+                    }
+                    
+                    // Colonne F: Figures au sol
+                    if (row[5] !== undefined && row[5] !== null && String(row[5]).trim() !== '') {
+                        figSol.add(String(row[5]).trim());
+                    }
+                    
+                    // Colonne G: Transitions
+                    if (row[6] !== undefined && row[6] !== null && String(row[6]).trim() !== '') {
+                        transitions.add(String(row[6]).trim());
+                    }
+                });
+
+                if (students.length === 0 && badges.size === 0 && figDebout.size === 0 && figAcro.size === 0 && figSol.size === 0 && transitions.size === 0) {
+                    alert('⚠️ Aucune donnée valide trouvée dans le fichier Excel.');
+                    return;
+                }
+
+                // Remplir les champs seulement s'il y a des données
+                if (students.length > 0) {
+                    document.getElementById('studentsList').value = students.join('\n');
+                }
+                if (badges.size > 0) {
+                    // Stocker les informations des badges avec leur nombre de figures
+                    appState.badgeFiguresCount = badgeFiguresCount;
+                    document.getElementById('badgesList').value = Array.from(badges).join('\n');
+                }
+                if (figDebout.size > 0) {
+                    document.getElementById('figuresDebout').value = Array.from(figDebout).join('\n');
+                }
+                if (figAcro.size > 0) {
+                    document.getElementById('figuresAcrobatique').value = Array.from(figAcro).join('\n');
+                }
+                if (figSol.size > 0) {
+                    document.getElementById('figuresSol').value = Array.from(figSol).join('\n');
+                }
+                if (transitions.size > 0) {
+                    document.getElementById('transitionLevels').value = Array.from(transitions).join('\n');
+                }
+
+                let message = '✅ Fichier Excel importé avec succès !\n\n';
+                if (students.length > 0) message += `${students.length} élève(s) chargé(s)\n`;
+                if (badges.size > 0) {
+                    message += `${badges.size} badge(s) chargé(s)\n`;
+                    // Afficher le nombre de figures par badge
+                    Object.keys(badgeFiguresCount).forEach(badge => {
+                        message += `  • ${badge}: ${badgeFiguresCount[badge]} figures\n`;
+                    });
+                }
+                if (figDebout.size > 0) message += `${figDebout.size} figure(s) debout chargée(s)\n`;
+                if (figAcro.size > 0) message += `${figAcro.size} figure(s) acrobatique(s) chargée(s)\n`;
+                if (figSol.size > 0) message += `${figSol.size} figure(s) au sol chargée(s)\n`;
+                if (transitions.size > 0) message += `${transitions.size} type(s) de transition chargé(s)`;
+
+                alert(message);
+            } catch (error) {
+                alert('❌ Erreur lors de la lecture du fichier Excel: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        // Début de séance
+        function startSession() {
+            showConfirmModal(
+                'Démarrer la séance',
+                'Voulez-vous commencer une nouvelle séance ?',
+                () => {
+                    loadConfiguration();
+                    showPage('page-observation-config');
+                    renderObservationConfig();
+                }
+            );
+        }
+
+        function loadConfiguration() {
+            appState.students = document.getElementById('studentsList').value
+                .split('\n')
+                .filter(s => s.trim())
+                .map(s => s.trim());
+
+            appState.figuresDebout = parseFigures(document.getElementById('figuresDebout').value);
+            appState.figuresAcrobatique = parseFigures(document.getElementById('figuresAcrobatique').value);
+            appState.figuresSol = parseFigures(document.getElementById('figuresSol').value);
+
+            appState.badges = document.getElementById('badgesList').value
+                .split('\n')
+                .filter(b => b.trim())
+                .map(b => b.trim());
+
+            // Si badgeFiguresCount n'a pas été rempli par l'import Excel, utiliser la valeur par défaut
+            if (Object.keys(appState.badgeFiguresCount).length === 0) {
+                appState.figuresPerJumper = parseInt(document.getElementById('figuresPerJumper').value);
+            }
+
+            appState.transitionLevels = document.getElementById('transitionLevels').value
+                .split('\n')
+                .filter(t => t.trim())
+                .map(t => t.trim());
+        }
+
+        function parseFigures(text) {
+            return text.split('\n')
+                .filter(f => f.trim())
+                .map(f => {
+                    const parts = f.split('-').map(p => p.trim());
+                    return {
+                        name: parts[0] || f,
+                        level: parts[1] || 'A'
+                    };
+                });
+        }
+
+        // Configuration de l'observation
+        function renderObservationConfig() {
+            const badgeDiv = document.getElementById('badgeSelection');
+            badgeDiv.innerHTML = '';
+            appState.badges.forEach(badge => {
+                const btn = document.createElement('button');
+                btn.className = 'figure-btn btn-secondary';
+                btn.innerHTML = `<span>${badge}</span>`;
+                btn.onclick = () => selectBadge(badge, btn);
+                badgeDiv.appendChild(btn);
+            });
+
+            const transitionDiv = document.getElementById('transitionSelection');
+            transitionDiv.innerHTML = '';
+            appState.transitionLevels.forEach(level => {
+                const btn = document.createElement('button');
+                btn.className = 'figure-btn btn-warning';
+                btn.innerHTML = `<span>${level}</span>`;
+                btn.onclick = () => selectTransitionLevel(level, btn);
+                transitionDiv.appendChild(btn);
+            });
+
+            const jumperDiv = document.getElementById('jumperSelection');
+            jumperDiv.innerHTML = '<div class="student-list" id="studentGrid"></div>';
+            renderStudentGrid();
+        }
+
+        function selectBadge(badge, btnElement) {
+            appState.currentBadge = badge;
+            
+            // Mettre à jour le nombre de figures requis pour ce badge
+            if (appState.badgeFiguresCount[badge]) {
+                appState.figuresPerJumper = appState.badgeFiguresCount[badge];
+            } else {
+                // Si pas de nombre spécifique, utiliser la valeur par défaut
+                appState.figuresPerJumper = parseInt(document.getElementById('figuresPerJumper').value) || 3;
+            }
+            
+            document.querySelectorAll('#badgeSelection button').forEach(btn => {
+                btn.style.opacity = '0.5';
+            });
+            btnElement.style.opacity = '1';
+        }
+
+        function selectTransitionLevel(level, btnElement) {
+            appState.requiredTransitionLevel = level;
+            document.querySelectorAll('#transitionSelection button').forEach(btn => {
+                btn.style.opacity = '0.5';
+            });
+            btnElement.style.opacity = '1';
+        }
+
+        function renderStudentGrid() {
+            const grid = document.getElementById('studentGrid');
+            grid.innerHTML = '';
+            appState.students.forEach(student => {
+                const div = document.createElement('div');
+                div.className = 'student-item';
+                if (appState.selectedJumpers.includes(student)) {
+                    div.classList.add('selected');
+                }
+                div.textContent = student;
+                div.onclick = () => selectJumper(student);
+                grid.appendChild(div);
+            });
+            updateSelectedJumpersDisplay();
+        }
+
+        function selectJumper(student) {
+            const index = appState.selectedJumpers.indexOf(student);
+            if (index > -1) {
+                appState.selectedJumpers.splice(index, 1);
+            } else {
+                if (appState.selectedJumpers.length < 3) {
+                    appState.selectedJumpers.push(student);
+                } else {
+                    alert('⚠️ Vous ne pouvez sélectionner que 3 jumpers maximum !');
+                    return;
+                }
+            }
+            renderStudentGrid();
+        }
+
+        function updateSelectedJumpersDisplay() {
+            const display = document.getElementById('selectedJumpers');
+            if (appState.selectedJumpers.length > 0) {
+                display.innerHTML = `<strong>Jumpers sélectionnés :</strong> ${appState.selectedJumpers.join(', ')}`;
+            } else {
+                display.innerHTML = '';
+            }
+        }
+
+        function confirmFigureSelection() {
+            if (!appState.currentBadge) {
+                alert('⚠️ Veuillez sélectionner un badge !');
+                return;
+            }
+            if (!appState.requiredTransitionLevel) {
+                alert('⚠️ Veuillez sélectionner un niveau de transition !');
+                return;
+            }
+            if (appState.selectedJumpers.length !== 3) {
+                alert('⚠️ Veuillez sélectionner exactement 3 jumpers !');
+                return;
+            }
+            showConfirmModal(
+                'Configuration des figures',
+                'Voulez-vous configurer les figures pour ces jumpers ?',
+                () => {
+                    appState.jumperFigures = { j1: [], j2: [], j3: [] };
+                    setupFigureSelection(1);
+                }
+            );
+        }
+
+        // Sélection des figures par jumper
+        function setupFigureSelection(jumperNum) {
+            const allFigures = [
+                ...appState.figuresDebout.map(f => ({ ...f, family: 'debout' })),
+                ...appState.figuresAcrobatique.map(f => ({ ...f, family: 'acrobatique' })),
+                ...appState.figuresSol.map(f => ({ ...f, family: 'sol' }))
+            ];
+
+            const pageId = `page-figures-j${jumperNum}`;
+            const nameId = `jumper${jumperNum}Name`;
+            const selectionId = `figureSelectionJ${jumperNum}`;
+            const selectedId = `selectedFiguresJ${jumperNum}`;
+
+            document.getElementById(nameId).textContent = appState.selectedJumpers[jumperNum - 1];
+
+            renderFigureButtons(jumperNum, allFigures);
+            showPage(pageId);
+        }
+
+        function renderFigureButtons(jumperNum, figures) {
+            const selectionDiv = document.getElementById(`figureSelectionJ${jumperNum}`);
+            const selectedDiv = document.getElementById(`selectedFiguresJ${jumperNum}`);
+            const jumperId = `j${jumperNum}`;
+            const selectedFigures = appState.jumperFigures[jumperId];
+
+            selectionDiv.innerHTML = '<h3>Sélectionnez les figures</h3>';
+            
+            figures.forEach(figure => {
+                const isSelected = selectedFigures.some(f => f.name === figure.name);
+                const btn = document.createElement('button');
+                btn.className = `figure-btn ${figure.family}`;
+                if (isSelected) {
+                    btn.style.opacity = '0.5';
+                    btn.style.border = '3px solid var(--success)';
+                }
+                btn.innerHTML = `<span>${figure.name} (${figure.level})</span>`;
+                btn.onclick = () => selectFigure(jumperNum, figure);
+                selectionDiv.appendChild(btn);
+            });
+
+            selectedDiv.innerHTML = '<h3 style="color: var(--accent);">Figures sélectionnées (cliquez pour retirer)</h3>';
+            selectedFigures.forEach((fig, idx) => {
+                const div = document.createElement('div');
+                div.className = 'figure-item';
+                div.style.cursor = 'pointer';
+                div.style.transition = 'all 0.3s ease';
+                div.innerHTML = `<strong>${idx + 1}. ${fig.name}</strong> <span>(${fig.level} - ${fig.family})</span>`;
+                div.onmouseover = () => {
+                    div.style.backgroundColor = 'rgba(255, 107, 107, 0.3)';
+                    div.style.borderLeftColor = 'var(--danger)';
+                };
+                div.onmouseout = () => {
+                    div.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                    div.style.borderLeftColor = 'var(--secondary)';
+                };
+                div.onclick = () => selectFigure(jumperNum, fig);
+                selectedDiv.appendChild(div);
+            });
+
+            const btnNext = document.getElementById(jumperNum === 1 ? 'btnNextJ2' : jumperNum === 2 ? 'btnNextJ3' : 'btnReview');
+            btnNext.style.display = selectedFigures.length === appState.figuresPerJumper ? 'block' : 'none';
+        }
+
+        function selectFigure(jumperNum, figure) {
+            const jumperId = `j${jumperNum}`;
+            const allFigures = [
+                ...appState.figuresDebout.map(f => ({ ...f, family: 'debout' })),
+                ...appState.figuresAcrobatique.map(f => ({ ...f, family: 'acrobatique' })),
+                ...appState.figuresSol.map(f => ({ ...f, family: 'sol' }))
+            ];
+
+            // Vérifier si la figure est déjà sélectionnée
+            const figureIndex = appState.jumperFigures[jumperId].findIndex(f => f.name === figure.name);
+            
+            if (figureIndex > -1) {
+                // La figure est déjà sélectionnée, on la retire
+                appState.jumperFigures[jumperId].splice(figureIndex, 1);
+            } else {
+                // La figure n'est pas sélectionnée, on l'ajoute si on n'a pas atteint le maximum
+                if (appState.jumperFigures[jumperId].length < appState.figuresPerJumper) {
+                    appState.jumperFigures[jumperId].push(figure);
+                }
+            }
+            
+            renderFigureButtons(jumperNum, allFigures);
+        }
+
+        function goToJumper2() {
+            showConfirmModal(
+                'Passer au Jumper 2',
+                'Confirmer les figures du Jumper 1 ?',
+                () => setupFigureSelection(2)
+            );
+        }
+
+        function goToJumper3() {
+            showConfirmModal(
+                'Passer au Jumper 3',
+                'Confirmer les figures du Jumper 2 ?',
+                () => setupFigureSelection(3)
+            );
+        }
+
+        function goToReview() {
+            showConfirmModal(
+                'Révision',
+                'Confirmer les figures du Jumper 3 ?',
+                () => {
+                    renderReview();
+                    showPage('page-review');
+                }
+            );
+        }
+
+        // Révision
+        function renderReview() {
+            const content = document.getElementById('reviewContent');
+            let html = `<div class="card"><h3>Badge : ${appState.currentBadge}</h3></div>`;
+
+            for (let i = 1; i <= 3; i++) {
+                const jumperId = `j${i}`;
+                const jumperName = appState.selectedJumpers[i - 1];
+                const figures = appState.jumperFigures[jumperId];
+
+                html += `<div class="card">
+                    <h3>Jumper ${i} : ${jumperName}</h3>
+                    <div class="figure-list">`;
+
+                figures.forEach((fig, idx) => {
+                    html += `<div class="figure-item">
+                        <strong>${idx + 1}. ${fig.name}</strong>
+                        <span>(${fig.level} - ${fig.family})</span>
+                    </div>`;
+                });
+
+                html += `</div></div>`;
+            }
+
+            content.innerHTML = html;
+        }
+
+        // Observation
+        function startObservation() {
+            showConfirmModal(
+                'Démarrer l\'observation',
+                'Êtes-vous prêt à commencer l\'observation ?',
+                () => {
+                    appState.timeRemaining = 90;
+                    appState.validatedFigures = { j1: [], j2: [], j3: [] };
+                    appState.transitionResults = { t1: null, t2: null };
+                    appState.exitResult = null;
+                    setupObservationPage(1);
+                    showPage('page-observe-j1');
+                    updateTransitionDisplay();
+                }
+            );
+        }
+
+        function setupObservationPage(jumperNum) {
+            const jumperId = `j${jumperNum}`;
+            const jumperName = appState.selectedJumpers[jumperNum - 1];
+            const figures = appState.jumperFigures[jumperId];
+
+            document.getElementById(`observeJ${jumperNum}Name`).textContent = jumperName;
+
+            const figuresDiv = document.getElementById(`observeFiguresJ${jumperNum}`);
+            
+            // Vider complètement le div
+            figuresDiv.innerHTML = '';
+            
+            // Ajouter le titre
+            const titleH3 = document.createElement('h3');
+            titleH3.style.color = 'var(--accent)';
+            titleH3.textContent = `Figures à réaliser - ${jumperName}`;
+            figuresDiv.appendChild(titleH3);
+
+            // Ajouter les figures
+            figures.forEach((fig, idx) => {
+                const div = document.createElement('div');
+                div.className = 'figure-item';
+                div.style.cursor = 'pointer';
+                div.innerHTML = `<strong>${idx + 1}. ${fig.name}</strong> <span>(${fig.level})</span>`;
+                div.onclick = () => validateFigure(jumperNum, idx);
+                figuresDiv.appendChild(div);
+            });
+
+            updateObservationDisplay(jumperNum);
+            
+            // Afficher le niveau de transition requis
+            if (jumperNum <= 2) {
+                document.getElementById(`transitionLevelJ${jumperNum}Display`).textContent = appState.requiredTransitionLevel;
+            }
+            
+            updateTransitionDisplay();
+        }
+
+        function validateTransitionOnPage(transNum, isValid) {
+            appState.transitionResults[`t${transNum}`] = isValid;
+            updateTransitionDisplay();
+            
+            // Si la transition est validée, passer automatiquement au jumper suivant
+            if (isValid) {
+                setTimeout(() => {
+                    if (transNum === 1) {
+                        goToJumper2FromJ1();
+                    } else if (transNum === 2) {
+                        goToJumper3FromJ2();
+                    }
+                }, 300); // Petit délai pour voir le statut validé
+            } else {
+                checkAutoEnd();
+            }
+        }
+
+        function validateExitOnPage(isValid) {
+            appState.exitResult = isValid;
+            updateExitDisplay();
+            checkAutoEnd();
+        }
+
+        function updateTransitionDisplay() {
+            // Mise à jour transition 1
+            const statusT1 = document.getElementById('transitionStatusJ1');
+            if (statusT1) {
+                if (appState.transitionResults.t1 === true) {
+                    statusT1.innerHTML = '<span style="color: var(--success);">✓ Transition validée</span>';
+                } else if (appState.transitionResults.t1 === false) {
+                    statusT1.innerHTML = '<span style="color: var(--danger);">✗ Transition non validée</span>';
+                } else {
+                    statusT1.innerHTML = '<span style="color: rgba(255,255,255,0.5);">Transition non évaluée</span>';
+                }
+            }
+
+            // Mise à jour transition 2
+            const statusT2 = document.getElementById('transitionStatusJ2');
+            if (statusT2) {
+                if (appState.transitionResults.t2 === true) {
+                    statusT2.innerHTML = '<span style="color: var(--success);">✓ Transition validée</span>';
+                } else if (appState.transitionResults.t2 === false) {
+                    statusT2.innerHTML = '<span style="color: var(--danger);">✗ Transition non validée</span>';
+                } else {
+                    statusT2.innerHTML = '<span style="color: rgba(255,255,255,0.5);">Transition non évaluée</span>';
+                }
+            }
+        }
+
+        function updateExitDisplay() {
+            const statusExit = document.getElementById('exitStatus');
+            if (statusExit) {
+                if (appState.exitResult === true) {
+                    statusExit.innerHTML = '<span style="color: var(--success);">✓ Sortie validée</span>';
+                } else if (appState.exitResult === false) {
+                    statusExit.innerHTML = '<span style="color: var(--danger);">✗ Sortie non validée</span>';
+                } else {
+                    statusExit.innerHTML = '<span style="color: rgba(255,255,255,0.5);">Sortie non évaluée</span>';
+                }
+            }
+        }
+
+        function checkAutoEnd() {
+            // Vérifier si tout est validé pour terminer automatiquement
+            const allFiguresValidated = 
+                appState.validatedFigures.j1.length === appState.figuresPerJumper &&
+                appState.validatedFigures.j2.length === appState.figuresPerJumper &&
+                appState.validatedFigures.j3.length === appState.figuresPerJumper;
+
+            const allTransitionsValidated = 
+                appState.transitionResults.t1 === true && 
+                appState.transitionResults.t2 === true;
+
+            const exitValidated = appState.exitResult === true;
+
+            // Si tout est validé, terminer automatiquement
+            if (allFiguresValidated && allTransitionsValidated && exitValidated) {
+                setTimeout(() => {
+                    alert('✅ Toutes les figures, transitions et sortie sont validées ! L\'enchaînement se termine automatiquement.');
+                    pauseTimer();
+                    goToSummary();
+                }, 500);
+            }
+        }
+
+        function goToJumper2FromJ1() {
+            setupObservationPage(2);
+            showPage('page-observe-j2');
+        }
+
+        function goToJumper3FromJ2() {
+            setupObservationPage(3);
+            showPage('page-observe-j3');
+        }
+
+        function validateFigure(jumperNum, figureIndex) {
+            const jumperId = `j${jumperNum}`;
+            const validatedArray = appState.validatedFigures[jumperId];
+            const index = validatedArray.indexOf(figureIndex);
+            
+            if (index > -1) {
+                // La figure est déjà validée, on l'annule
+                validatedArray.splice(index, 1);
+            } else {
+                // La figure n'est pas validée, on la valide
+                validatedArray.push(figureIndex);
+            }
+            
+            updateObservationDisplay(jumperNum);
+            checkAutoEnd();
+        }
+
+        function updateObservationDisplay(jumperNum) {
+            const jumperId = `j${jumperNum}`;
+            const figuresDiv = document.getElementById(`observeFiguresJ${jumperNum}`);
+            const figures = appState.jumperFigures[jumperId];
+
+            // Ne parcourir que les divs avec la classe figure-item (exclure le h3)
+            const figureDivs = figuresDiv.querySelectorAll('.figure-item');
+            
+            figureDivs.forEach((div, idx) => {
+                if (appState.validatedFigures[jumperId].includes(idx)) {
+                    div.classList.add('validated');
+                } else {
+                    div.classList.remove('validated');
+                }
+            });
+        }
+
+        // Timer
+        function startTimer() {
+            document.getElementById('btnStartTimer').style.display = 'none';
+            document.getElementById('btnPauseTimer').style.display = 'inline-block';
+
+            appState.timerInterval = setInterval(() => {
+                appState.timeRemaining--;
+                updateTimerDisplay();
+
+                if (appState.timeRemaining <= 0) {
+                    pauseTimer();
+                    alert('⏰ Temps écoulé !');
+                    goToSummary();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(appState.timerInterval);
+            document.getElementById('btnStartTimer').style.display = 'inline-block';
+            document.getElementById('btnPauseTimer').style.display = 'none';
+        }
+
+        function resetTimer() {
+            showConfirmModal(
+                'Remise à zéro',
+                'Voulez-vous vraiment remettre le chronomètre à zéro ?',
+                () => {
+                    clearInterval(appState.timerInterval);
+                    appState.timeRemaining = 90;
+                    updateTimerDisplay();
+                    document.getElementById('btnStartTimer').style.display = 'inline-block';
+                    document.getElementById('btnPauseTimer').style.display = 'none';
+                }
+            );
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(appState.timeRemaining / 60);
+            const seconds = appState.timeRemaining % 60;
+            const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            const timers = ['timer', 'timer2', 'timer3'];
+            timers.forEach(timerId => {
+                const timerEl = document.getElementById(timerId);
+                if (timerEl) {
+                    timerEl.textContent = timeStr;
+                    timerEl.className = 'timer';
+                    
+                    if (appState.timeRemaining > 60) {
+                        timerEl.classList.add('green');
+                    } else if (appState.timeRemaining > 30) {
+                        timerEl.classList.add('yellow');
+                    } else {
+                        timerEl.classList.add('red');
+                    }
+                }
+            });
+        }
+
+        // Transitions
+        function goToTransition1() {
+            document.getElementById('transitionLevel1').textContent = appState.requiredTransitionLevel;
+            showPage('page-transition1');
+        }
+
+        function validateTransition(transNum, isValid) {
+            appState.transitionResults[`t${transNum}`] = isValid;
+            if (transNum === 1) {
+                setupObservationPage(2);
+                showPage('page-observe-j2');
+            } else {
+                setupObservationPage(3);
+                showPage('page-observe-j3');
+            }
+        }
+
+        function goToTransition2() {
+            document.getElementById('transitionLevel2').textContent = appState.requiredTransitionLevel;
+            showPage('page-transition2');
+        }
+
+        function goToObserveJumper(jumperNum) {
+            // Aller directement au jumper sans repasser par la transition
+            setupObservationPage(jumperNum);
+            showPage(`page-observe-j${jumperNum}`);
+        }
+
+        function goToExit() {
+            showPage('page-exit');
+        }
+
+        function validateExit(isValid) {
+            appState.exitResult = isValid;
+            goToSummary();
+        }
+
+        function confirmEndSequence() {
+            showConfirmModal(
+                'Fin de l\'enchaînement',
+                'Voulez-vous vraiment terminer cet enchaînement ?',
+                () => {
+                    pauseTimer();
+                    goToSummary();
+                }
+            );
+        }
+
+        // Récapitulatif du passage
+        function goToSummary() {
+            const allValidated = 
+                appState.validatedFigures.j1.length === appState.figuresPerJumper &&
+                appState.validatedFigures.j2.length === appState.figuresPerJumper &&
+                appState.validatedFigures.j3.length === appState.figuresPerJumper;
+
+            const transitionsValidated = 
+                appState.transitionResults.t1 === true && 
+                appState.transitionResults.t2 === true;
+
+            const exitValidated = appState.exitResult === true;
+
+            const badgeValidated = allValidated && transitionsValidated && exitValidated && appState.timeRemaining > 0;
+
+            // Calculer le temps final
+            const finalMinutes = Math.floor(appState.timeRemaining / 60);
+            const finalSeconds = appState.timeRemaining % 60;
+            const timeDisplay = `${finalMinutes.toString().padStart(2, '0')}:${finalSeconds.toString().padStart(2, '0')}`;
+            const totalTime = 90; // 1:30
+            const timeUsed = totalTime - appState.timeRemaining;
+            const timeUsedMinutes = Math.floor(timeUsed / 60);
+            const timeUsedSeconds = timeUsed % 60;
+            const timeUsedDisplay = `${timeUsedMinutes.toString().padStart(2, '0')}:${timeUsedSeconds.toString().padStart(2, '0')}`;
+
+            let html = `<div class="card">
+                <h3>Badge : ${appState.currentBadge}</h3>
+                <h3>Niveau de transition requis : ${appState.requiredTransitionLevel}</h3>
+                <p class="badge-display ${badgeValidated ? 'badge-success' : 'badge-danger'}">
+                    ${badgeValidated ? '✓ Badge Validé' : '✗ Badge Non Validé'}
+                </p>
+                <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 10px;">
+                    <h3 style="color: var(--accent); margin-bottom: 0.5rem;">⏱️ Temps de l'enchaînement</h3>
+                    <p style="font-size: 1.5rem; font-weight: 600; color: ${appState.timeRemaining > 0 ? 'var(--success)' : 'var(--danger)'};">
+                        Temps restant : ${timeDisplay}
+                    </p>
+                    <p style="font-size: 1.2rem; color: rgba(255, 255, 255, 0.7);">
+                        Temps utilisé : ${timeUsedDisplay}
+                    </p>
+                </div>`;
+
+            if (!allValidated) {
+                html += `<p style="color: var(--danger); margin-top: 1rem;">⚠️ Toutes les figures n'ont pas été validées</p>`;
+            }
+            if (!transitionsValidated) {
+                html += `<p style="color: var(--danger); margin-top: 0.5rem;">⚠️ Les transitions n'ont pas été validées correctement</p>`;
+                html += `<p style="margin-top: 0.5rem;">Transition 1→2 : ${appState.transitionResults.t1 === true ? '✓ Validée' : appState.transitionResults.t1 === false ? '✗ Non validée' : '? Non évaluée'}</p>`;
+                html += `<p>Transition 2→3 : ${appState.transitionResults.t2 === true ? '✓ Validée' : appState.transitionResults.t2 === false ? '✗ Non validée' : '? Non évaluée'}</p>`;
+            }
+            if (!exitValidated) {
+                html += `<p style="color: var(--danger); margin-top: 0.5rem;">⚠️ La sortie n'a pas été validée</p>`;
+                html += `<p style="margin-top: 0.5rem;">Sortie : ${appState.exitResult === true ? '✓ Validée' : appState.exitResult === false ? '✗ Non validée' : '? Non évaluée'}</p>`;
+            }
+            if (appState.timeRemaining <= 0) {
+                html += `<p style="color: var(--danger); margin-top: 0.5rem;">⚠️ Le temps est écoulé</p>`;
+            }
+
+            html += `</div>`;
+
+            for (let i = 1; i <= 3; i++) {
+                const jumperId = `j${i}`;
+                const jumperName = appState.selectedJumpers[i - 1];
+                const figures = appState.jumperFigures[jumperId];
+                const validated = appState.validatedFigures[jumperId];
+
+                html += `<div class="card">
+                    <h3>Jumper ${i} : ${jumperName}</h3>
+                    <div class="figure-list">`;
+
+                figures.forEach((fig, idx) => {
+                    const isValidated = validated.includes(idx);
+                    html += `<div class="figure-item ${isValidated ? 'validated' : ''}">
+                        <strong>${isValidated ? '✓' : '✗'} ${fig.name}</strong>
+                        <span>(${fig.level})</span>
+                    </div>`;
+                });
+
+                html += `</div></div>`;
+            }
+
+            document.getElementById('summaryContent').innerHTML = html;
+
+            // Enregistrer le passage
+            appState.sessionRecords.push({
+                badge: appState.currentBadge,
+                transitionLevel: appState.requiredTransitionLevel,
+                jumpers: [...appState.selectedJumpers],
+                figures: JSON.parse(JSON.stringify(appState.jumperFigures)),
+                validated: JSON.parse(JSON.stringify(appState.validatedFigures)),
+                transitions: JSON.parse(JSON.stringify(appState.transitionResults)),
+                exit: appState.exitResult,
+                badgeValidated: badgeValidated,
+                timeRemaining: appState.timeRemaining,
+                timeUsed: timeUsed
+            });
+
+            showPage('page-summary');
+        }
+
+        function backToObservationConfig() {
+            showConfirmModal(
+                'Nouvelle observation',
+                'Voulez-vous configurer une nouvelle observation ?',
+                () => {
+                    appState.selectedJumpers = [];
+                    appState.currentBadge = '';
+                    appState.requiredTransitionLevel = '';
+                    renderObservationConfig();
+                    showPage('page-observation-config');
+                }
+            );
+        }
+
+        // Fin de séance
+        function endSession() {
+            showConfirmModal(
+                'Fin de séance',
+                'Voulez-vous terminer la séance et voir le récapitulatif ?',
+                () => {
+                    renderSessionSummary();
+                    showPage('page-session-summary');
+                }
+            );
+        }
+
+        function renderSessionSummary() {
+            let html = '<table class="summary-table"><thead><tr><th>Badge</th><th>Transition</th><th>Jumpers</th><th>Résultat</th></tr></thead><tbody>';
+
+            appState.sessionRecords.forEach((record, idx) => {
+                html += `<tr>
+                    <td>${record.badge}</td>
+                    <td>${record.transitionLevel || 'N/A'}</td>
+                    <td>${record.jumpers.join(', ')}</td>
+                    <td><span class="badge-display ${record.badgeValidated ? 'badge-success' : 'badge-danger'}">
+                        ${record.badgeValidated ? '✓ Validé' : '✗ Non Validé'}
+                    </span></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('sessionSummaryContent').innerHTML = html;
+        }
+
+        function downloadExcel() {
+            const data = [];
+            data.push(['Badge', 'Niveau Transition', 'Jumper 1', 'Jumper 2', 'Jumper 3', 'Résultat', 'Temps restant', 'Temps utilisé', 'Transition 1→2', 'Transition 2→3', 'Sortie']);
+
+            appState.sessionRecords.forEach(record => {
+                const timeRemaining = `${Math.floor(record.timeRemaining / 60)}:${(record.timeRemaining % 60).toString().padStart(2, '0')}`;
+                const timeUsed = record.timeUsed !== undefined ? `${Math.floor(record.timeUsed / 60)}:${(record.timeUsed % 60).toString().padStart(2, '0')}` : 'N/A';
+                
+                data.push([
+                    record.badge,
+                    record.transitionLevel || 'N/A',
+                    record.jumpers[0],
+                    record.jumpers[1],
+                    record.jumpers[2],
+                    record.badgeValidated ? 'Validé' : 'Non Validé',
+                    timeRemaining,
+                    timeUsed,
+                    record.transitions.t1 === true ? 'Validée' : record.transitions.t1 === false ? 'Non validée' : 'Non évaluée',
+                    record.transitions.t2 === true ? 'Validée' : record.transitions.t2 === false ? 'Non validée' : 'Non évaluée',
+                    record.exit === true ? 'Validée' : record.exit === false ? 'Non validée' : 'Non évaluée'
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Séance Double Dutch');
+            XLSX.writeFile(wb, 'double-dutch-seance.xlsx');
+        }
+
+        function endSessionFinal() {
+            showConfirmModal(
+                'Terminer la séance',
+                'Voulez-vous vraiment terminer la séance et revenir à la configuration ?',
+                () => {
+                    appState.sessionRecords = [];
+                    appState.selectedJumpers = [];
+                    appState.currentBadge = '';
+                    appState.requiredTransitionLevel = '';
+                    showPage('page-config');
+                }
+            );
+        }
+    </script>
+</body>
+</html>
